@@ -1,4 +1,4 @@
- #include <stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <mpi.h>
 
@@ -7,29 +7,20 @@ int main(int argc, char* argv[]) {
     MPI_Init(NULL, NULL);
     MPI_Comm_rank(MPI_COMM_WORLD,&rank);
     MPI_Comm_size(MPI_COMM_WORLD,&np);
-     
-    //master
     if (rank == 0) {
-       
         if(np <2){
             printf("You should run this on 2 or more processes.\n");
             return 0;
         }
         printf("Hello from master process.\n");
-        fflush(stdout);
-
         printf("Number of slave process is %d\n",np-1);
-        fflush(stdout);
-
         printf("Please enter size of array...\n");
-  fflush(stdout);
         int size_of_array;
         scanf("%d", &size_of_array);
 
         int* array = (int*) malloc(size_of_array * sizeof(int));
         int i = 0;
         printf("Please enter array element...\n");
-        fflush(stdout);
         while (i < size_of_array) {
             scanf("%d", &array[i]);
             i++;
@@ -58,16 +49,13 @@ int main(int argc, char* argv[]) {
                 max_element =  curr_max;
                 index = curr_index + offset;
             }
-            offset += sent_count;//add recevied subArray's size
+            offset += sent_count;
             i++;
-            
         }
         printf("Master process announce the final max which is %d and its index is %d.\nThanks for using our program",max_element,index);
-        fflush(stdout);
-
-
     }
-   
+    else
+    {
         int recv_count,*sub_array;
         MPI_Recv(&recv_count, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         sub_array = (int*)malloc(recv_count * sizeof(int));
@@ -84,12 +72,11 @@ int main(int argc, char* argv[]) {
         }
         printf("Hello from slave#%d Max number in my partition is %d and index is %d.\n",
             rank, max_element, index);
-           
+            
         MPI_Send(&max_element, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
         MPI_Send(&index, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
         free(sub_array);
-
-    
+    }
     MPI_Finalize();
     return 0;
 }
